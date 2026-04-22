@@ -125,6 +125,14 @@ class ProductoService:
             )
 
         # 3. Procesar categorías (tabla intermedia)
+            # Validar que no haya categorías repetidas en la misma solicitud
+            categoria_ids = [cat.categoria_id for cat in data.categorias]
+            if len(categoria_ids) != len(set(categoria_ids)):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="No se pueden repetir categorías en el mismo producto."
+                )
+            
             for cat in data.categorias:
                 categoria = uow.categorias.get_by_id(cat.categoria_id)
 
@@ -148,6 +156,14 @@ class ProductoService:
                 producto.categorias.append(producto_categoria)
 
         # 4. Procesar ingredientes (tabla intermedia)
+            # Validar que no haya ingredientes repetidos en la misma solicitud
+            ingrediente_ids = [ing.ingrediente_id for ing in data.ingredientes]
+            if len(ingrediente_ids) != len(set(ingrediente_ids)):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="No se pueden repetir ingredientes en el mismo producto."
+                )
+                
             for ing in data.ingredientes:
                 ingrediente = uow.ingredientes.get_by_id(ing.ingrediente_id)
 
@@ -293,7 +309,17 @@ class ProductoService:
             #patch = data.model_dump(exclude_unset=True)
             for field, value in patch.items():
                 setattr(producto, field, value)
-                    # Categorías — None = no tocar, [] = borrar todas, [items] = reemplazar
+            
+            # Categorías — None = no tocar, [] = borrar todas, [items] = reemplazar            
+                # Validar que no haya categorías repetidas en la misma solicitud
+            if data.categorias is not None:
+                categoria_ids = [cat.categoria_id for cat in data.categorias]
+                if len(categoria_ids) != len(set(categoria_ids)):
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail="No se pueden repetir categorías en el mismo producto."
+                    )
+                                        
             if data.categorias is not None:
                 for pc in list(producto.categorias):   # list() para iterar copia segura mientras se modifica
                     uow.session.delete(pc)
@@ -320,6 +346,15 @@ class ProductoService:
                     )
 
         # Ingredientes — None = no tocar, [] = borrar todos, [items] = reemplazar
+            # Validar que no haya ingredientes repetidos en la misma solicitud
+            if data.ingredientes is not None:
+                ingrediente_ids = [ing.ingrediente_id for ing in data.ingredientes]
+                if len(ingrediente_ids) != len(set(ingrediente_ids)):
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail="No se pueden repetir ingredientes en el mismo producto."
+                    )
+        
             if data.ingredientes is not None:
                 for pi in list(producto.ingredientes):
                     uow.session.delete(pi)
@@ -344,8 +379,9 @@ class ProductoService:
                             es_removible=ing.es_removible
                         )
                     )
+                    
             producto.updated_at = uow.now
-            #uow.productos.add(producto)
+            uow.productos.add(producto) # agregar el producto al repositorio
             result = ProductoRead.model_validate(producto)
 
         return result
