@@ -123,6 +123,10 @@ class ProductoService:
                 stock_cantidad=data.stock_cantidad,
                 disponible=data.disponible
             )
+            
+        # 5. Persistir
+        #  ! CAMBIO: SQLAlchemy orden de persistencia de tablas intermedias.
+            uow.productos.add(producto)
 
         # 3. Procesar categorías (tabla intermedia)
             # Validar que no haya categorías repetidas en la misma solicitud
@@ -186,8 +190,6 @@ class ProductoService:
 
                 producto.ingredientes.append(producto_ingrediente)
 
-        # 5. Persistir
-            uow.productos.add(producto)
 
         # 6. Serializar
             result = ProductoRead.model_validate(producto)

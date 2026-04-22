@@ -20,6 +20,7 @@ class Categoria(Base, table=True):
     nombre: str = Field(max_length=100, unique=True, nullable=False) #nombre obligatorio, no puede ser nulo, debe ser único y su longitud máxima es de 100 caracteres
     descripcion: str = Field(nullable=False) #descripción obligatoria, no puede ser nula, se espera que contenga información detallada sobre la categoría
     imagen_url: str = Field(nullable=False) #url obligatoria, no puede ser nula
+    color: Optional[str] = Field(default=None, nullable=True) #! CAMBIO: color (lo dejamos como opcional por si agregamos un categoría desde swagger, desde el front siempre se envía color)
     
     parent_id: Optional[int] = Field(
         default=None,
