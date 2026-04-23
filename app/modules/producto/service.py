@@ -312,6 +312,13 @@ class ProductoService:
             for field, value in patch.items():
                 setattr(producto, field, value)
             
+            # No permite dejar sin categorías o ingredientes
+            if data.categorias is not None and len(data.categorias) == 0:
+                raise HTTPException(400, "Debe tener al menos una categoría")
+
+            if data.ingredientes is not None and len(data.ingredientes) == 0:
+                raise HTTPException(400, "Debe tener al menos un ingrediente")
+            
             # Categorías — None = no tocar, [] = borrar todas, [items] = reemplazar            
                 # Validar que no haya categorías repetidas en la misma solicitud
             if data.categorias is not None:
@@ -382,8 +389,7 @@ class ProductoService:
                         )
                     )
                     
-            producto.updated_at = uow.now
-            uow.productos.add(producto) # agregar el producto al repositorio
+            producto.updated_at = uow.now            
             result = ProductoRead.model_validate(producto)
 
         return result
